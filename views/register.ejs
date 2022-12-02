@@ -1,0 +1,37 @@
+<%- include('partials/head'); %>
+<body>
+<main class="w-75 m-auto">
+    <img class="mb-4" src="images/logo.png" alt="" width="200">
+    <form id="registerForm" class="border border-3 p-3" action="/register" method="post">
+        <h1 class="h1 mb-3 fw-bold">Sign up</h1>
+        <div class="form-floating mb-3">
+            <label for="userName">User name</label>
+            <input type="text" class="form-control" id="userName" name="userName" placeholder="johndoe">
+        </div>
+
+        <div class="form-floating mb-3">
+            <label for="password">Password</label>
+            <input type="password" class="form-control" id="password" name="password" placeholder="Password">
+        </div>
+
+        <div class="form-floating mb-3">
+            <label for="confirmPassword">Confirm password</label>
+            <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm password">
+        </div>
+
+        <div class="form-floating mb-3">
+            <label for="userType">User type</label>
+            <select class="form-select form-control" id="userType" name="userType" required="">
+                <option value="">Choose...</option>
+                <option>customer</option>
+                <option>admin</option>
+            </select>
+        </div>
+
+        <button type="submit" class="w-100 btn btn-primary btn-lg mt-5">Submit</button>
+    </form>
+</main>
+<%- include('partials/footer'); %>
+<script src="js/register.js"></script>
+</body>
+</html>

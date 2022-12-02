@@ -1,0 +1,4 @@
+{
+  "mongo_string_connection" : "your_mongo_string_connection",
+  "session_secret" : "secret1234"
+}

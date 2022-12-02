@@ -1,0 +1,27 @@
+<%- include('partials/head'); %>
+<body>
+<main class="w-75 m-auto">
+    <h2 class="text-lg text-info mt-3"><%= msg %></h2>
+    <img class="mb-4" src="images/logo.png" alt="" width="200">
+
+    <form id="loginForm" class="border border-3 p-3" action="/" method="post">
+        <h1 class="h1 mb-3 fw-bold">Sign in</h1>
+
+        <div class="form-floating mb-3">
+            <label for="userName">User name</label>
+            <input type="text" class="form-control" id="userName" name="userName" placeholder="jhondoe">
+        </div>
+
+        <div class="form-floating mb-3">
+            <label for="password">Password</label>
+            <input type="password" class="form-control" id="password" name="password" placeholder="Password">
+        </div>
+
+        <button type="submit" class="w-100 btn btn-primary btn-lg mb-3  mt-5">Sign in</button>
+        <a href="/register" class="w-100 btn btn-lg btn-outline-secondary">Sign up</a>
+    </form>
+</main>
+<%- include('partials/footer'); %>
+<script src="js/login.js"></script>
+</body>
+</html>

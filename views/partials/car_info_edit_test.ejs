@@ -1,0 +1,110 @@
+<div class="list-group col-md-6">
+    <h4 class="d-flex justify-content-between align-items-center mb-3">
+        <span class="text-primary">Car details</span>
+    </h4>
+    <ul class="mb-3">
+        <li class="list-group-item d-flex justify-content-between lh-sm">
+            <div>
+                <label for="make" class="form-label">Make</label>
+                <input type="text" class="form-control" id="make" name="make" placeholder="" required=""
+                       value=<%= user?.carDetails.make ?? "" %>>
+                <div class="invalid-feedback">
+                    Please enter your car's make.
+                </div>
+            </div>
+        </li>
+        <li class="list-group-item d-flex justify-content-between lh-sm">
+            <div>
+                <label for="model" class="form-label">Model</label>
+                <input type="text" class="form-control" id="model" name="model" placeholder="" required=""
+                       value=<%= user?.carDetails.model ?? "" %>>
+                <div class="invalid-feedback">
+                    Please enter a valid model.
+                </div>
+            </div>
+        </li>
+        <li class="list-group-item d-flex justify-content-between lh-sm">
+            <div>
+                <label for="year" class="form-label">Year</label>
+                <select class="custom-select" id="year" name="year" required="">
+                    <option value="">Choose...</option>
+                    <option <% if(user?.carDetails.year === "2022"){ %>selected
+                            <% } %>
+                    >2022
+                    </option>
+                    <option <% if(user?.carDetails.year === "2021"){ %>selected
+                            <% } %>
+                    >2021
+                    </option>
+                    <option <% if(user?.carDetails.year === "2020"){ %>selected
+                            <% } %>
+                    >2020
+                    </option>
+                    <option <% if(user?.carDetails.year === "2019"){ %>selected
+                            <% } %>
+                    >2019
+                    </option>
+                    <option <% if(user?.carDetails.year === "2018"){ %>selected
+                            <% } %>
+                    >2018
+                    </option>
+                    <option <% if(user?.carDetails.year === "2017"){ %>selected
+                            <% } %>
+                    >2017
+                    </option>
+                    <option <% if(user?.carDetails.year === "2016"){ %>selected
+                            <% } %>
+                    >2016
+                    </option>
+                    <option <% if(user?.carDetails.year === "2015"){ %>selected
+                            <% } %>
+                    >2015
+                    </option>
+                    <option <% if(user?.carDetails.year === "2014"){ %>selected
+                            <% } %>
+                    >2014
+                    </option>
+                    <option <% if(user?.carDetails.year === "2013"){ %>selected
+                            <% } %>
+                    >2013
+                    </option>
+                    <option <% if(user?.carDetails.year === "2012"){ %>selected
+                            <% } %>
+                    >2012
+                    </option>
+                    <option <% if(user?.carDetails.year === "2011"){ %>selected
+                            <% } %>
+                    >2011
+                    </option>
+                    <option <% if(user?.carDetails.year === "2010"){ %>selected
+                            <% } %>
+                    >2010
+                    </option>
+                </select>
+                <div class="invalid-feedback">
+                    Please provide a valid state.
+                </div>
+            </div>
+        </li>
+        <li class="list-group-item d-flex justify-content-between lh-sm">
+            <div>
+                <label for="color" class="form-label">Color</label>
+                <input type="text" class="form-control" id="color" name="color" placeholder="" required=""
+                       value=<%= user?.carDetails.color ?? "" %>>
+                <div class="invalid-feedback">
+                    Please enter your Car's color.
+                </div>
+            </div>
+        </li>
+        <li class="list-group-item d-flex justify-content-between lh-sm">
+            <div>
+                <label for="plateNo" class="form-label">Plat Number</label>
+                <input type="text" class="form-control" id="plateNo" name="plateNo" placeholder="" required=""
+                       value=<%= user?.carDetails.plateNo ?? "" %>>
+                <div class="invalid-feedback">
+                    Please enter your plat number.
+                </div>
+            </div>
+        </li>
+    </ul>
+</div>

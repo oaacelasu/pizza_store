@@ -1,0 +1,23 @@
+<%- include('partials/head'); %>
+<body>
+<%- include('partials/navbar'); %>
+<div class="container">
+    <main>
+        <%- include('partials/header', {title:'G2 Test Info', description:'Below is a form to enter your G2 test information. Please fill out all fields.'}); %>
+
+        <form class="needs-validation" novalidate="" id="g2Form" name="g2Form" action="/g2" method="post">
+
+            <div class="row g-5">
+
+                <%- include('partials/car_info_edit_test', {user:null}); %>
+
+                <button class="w-100 btn btn-primary btn-lg order-md-last" type="submit" id="submit">Submit</button>
+
+            </div>
+        </form>
+    </main>
+</div>
+<%- include('partials/footer'); %>
+<script src="js/g2.js"></script>
+</body>
+</html>

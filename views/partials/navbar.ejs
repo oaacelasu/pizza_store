@@ -1,0 +1,29 @@
+<header>
+    <nav class="navbar navbar-light justify-content-between">
+        <a class="navbar-brand" href="/dashboard">
+            <img src="/images/logo.png" width="48" height="48" class="d-inline-block align-top" alt="">
+            <h1 class="d-inline-block align-top">Mantel Rojo</h1>
+        </a>
+        <ul class="nav navbar-right">
+
+            <% if(userType === 'customer') { %>
+                <li class="nav-item">
+                    <a class="nav-link" href="/shopping_cart">Shopping</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/shopping_cart">My Orders</a>
+                </li>
+            <% } %>
+
+            <% if(userType === 'admin') { %>
+                <li class="nav-item">
+                    <a class="nav-link" href="/dashboard">Home</a>
+                </li>
+            <% } %>
+
+            <li class="nav-item">
+                <a class="nav-link" href="/logout">Logout</a>
+            </li>
+        </ul>
+    </nav>
+</header>
