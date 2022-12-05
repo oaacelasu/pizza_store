@@ -1,0 +1,23 @@
+<%- include('partials/head'); %>
+<body>
+<%- include('partials/navbar'); %>
+<div>
+    <main class="container">
+        <%- include('partials/header', {title:'My Orders', description:'Find here your latest orders'}); %>
+
+        <div class="list-group">
+
+            <% for (let i = 0; i < orders?.length ?? 0; i++) { %>
+                <%- include('partials/order_item', {i:i}); %>
+            <% } %>
+            <h2 class="text-lg text-info mt-3 <%= orders.length !== 0 ? "hidden" : "visible" %>">You don't have orders
+                yet</h2>
+        </div>
+
+
+    </main>
+</div>
+<%- include('partials/footer'); %>
+<script src="js/lib/utils_lib.js"></script>
+</body>
+</html>

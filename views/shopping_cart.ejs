@@ -1,23 +1,149 @@
 <%- include('partials/head'); %>
+<script>
+    var productsStr = '<%- JSON.stringify(products) %>'; // test is now a valid js object
+</script>
 <body>
 <%- include('partials/navbar'); %>
 <div class="container">
-    <main>
-        <%- include('partials/header', {title:'G2 Test Info', description:'Below is a form to enter your G2 test information. Please fill out all fields.'}); %>
+    <main class="row">
+        <%- include('partials/header', {title:'Menu', description:'A pizzeria where less is more. Pizzas with few ingredients, Italian cheeses, home-grown tomatoes and prepared in a traditional wood-fired oven.'}); %>
 
-        <form class="needs-validation" novalidate="" id="g2Form" name="g2Form" action="/g2" method="post">
+        <form class="needs-validation col-md-12" novalidate="" id="shopping_cart" name="shopping_cart"
+              action="/shopping_cart"
+              method="post">
 
-            <div class="row g-5">
+            <h2 class="mt-5">Size</h2>
 
-                <%- include('partials/car_info_edit_test', {user:null}); %>
+            <div class="form-floating">
+                <select class="form-select" id="productSelect" aria-label="Product select label">
+                    <option value="none" selected>I feel like pizza</option>
+                    <% for (let i = 0; i < products?.length ?? 0; i++) {
+                    if(products[i].product_type === "main") { %>
 
-                <button class="w-100 btn btn-primary btn-lg order-md-last" type="submit" id="submit">Submit</button>
-
+                        <option value="<%= products[i].id %>">
+                            <%= products[i].name %> - $<%= products[i].list_price %>
+                        </option>
+                    <% } } %>
+                </select>
+                <label for="productSelect">Select a pizza size</label>
             </div>
+
+            <div class="list-group w-auto">
+                <% for (let i = 0; i < products?.length ?? 0; i++) {
+                if(products[i].product_type === "main") { %>
+                    <a id="<%= products[i].id %>" href="#"
+                       class="list-group-item  d-flex gap-3 py-1 item-view d-none" aria-current="true">
+                        <img class="d-block" src="<%= products[i].image %>" alt="" width="96" height="96">
+                        <div class="d-flex gap-2 w-100 justify-content-between p-3">
+                            <div>
+                                <h4 class="mb-1 "><%= products[i].name %></h4>
+                                <p class="mb-1 opacity-75"><%= products[i].description %></p>
+                                <small class="text-muted">Max included toppings: <%= products[i].max_toppings %></small>
+                            </div>
+                            <div class="d-flex flex-column justify-content-between">
+                                <h2 class="mb-0">$<%= products[i].list_price %></h2>
+                                <div id="quantity-<%= products[i].id %>" class="input-group">
+                                    <input type="button" value="-" class="button-minus" data-field="quantity">
+                                    <input type="number" step="1" max="" value="1" name="quantity"
+                                           class="quantity-field" id="quantity-field-<%= products[i].id %>">
+                                    <input type="button" value="+" class="button-plus" data-field="quantity">
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                <% } } %>
+            </div>
+
+            <h2 class="mt-2 toppings d-none">Toppings</h2>
+            <h5 class="mt-5 toppings d-none">$2.0 for each additional topping not included with the pizza size</h5>
+            <div class="list-group d-none mt-lg-4 list-group-horizontal flex-wrap toppings">
+                <% for (let i = 0; i < products?.length ?? 0; i++) {
+                if(products[i].product_type === "topping") { %>
+
+                    <a class="list-group-item p-3 m-2 rounded-3 d-inline-flex topping_card" id="topping_<%= products[i]._id %>">
+                        <img src="<%= products[i].image %>" class="img-fluid" width="96" height="96" alt="...">
+
+                        <div class="mx-3">
+                            <h6 class="mb-1"><%= products[i].name %></h6>
+                            <label>
+                                <%= products[i].description %>
+                            </label>
+                        </div>
+                    </a>
+
+                <% } } %>
+            </div>
+
+            <h2 class="mt-2 sides d-none">Sides</h2>
+            <div class="list-group d-none mt-lg-4  sides">
+                <% for (let i = 0; i < products?.length ?? 0; i++) {
+                if(products[i].product_type === "side") { %>
+
+                    <a class="list-group-item p-3 m-2 rounded-3 d-inline-flex side_card" id="side_<%= products[i]._id %>">
+                        <img src="<%= products[i].image %>" class="img-fluid" width="96" height="96" alt="...">
+
+                        <div class="mx-3 flex-grow-1">
+                            <h6 class="mb-1"><%= products[i].name %></h6>
+                            <label>
+                                <%= products[i].description %>
+                            </label>
+                        </div>
+
+                        <div class="d-flex flex-column justify-content-between">
+                            <h2 class="mb-0">$<%= products[i].list_price %></h2>
+                            <div id="quantity-<%= products[i].id %>" class="input-group">
+                                <input type="button" value="-" class="button-minus" data-field="quantity">
+                                <input type="number" step="1" max="" value="0" name="quantity"
+                                       class="quantity-side-field" id="quantity-field-<%= products[i].id %>">
+                                <input type="button" value="+" class="button-plus" data-field="quantity">
+                            </div>
+                        </div>
+                    </a>
+
+                <% } } %>
+            </div>
+
+
+            <h2 class="mt-5 tip d-none">Tip</h2>
+            <div class="form-floating tip d-none">
+                <select class="form-select" id="tipSelect" name="tip" aria-label="Tip select">
+                    <option value="0">No tip</option>
+                    <option value="10">10%</option>
+                    <option value="15">15%</option>
+                    <option value="20">20%</option>
+                    <option value="25">25%</option>
+                </select>
+                <label for="tipSelect">Select a tip</label>
+            </div>
+
+            <div class="col-md-12 summary d-none">
+                <h2 class="mt-5">Summary</h2>
+                <div class="d-flex flex-column gap-3">
+                    <div class="d-flex justify-content-between">
+                        <h5>Subtotal</h5>
+                        <h5 id="subtotal">$0.00</h5>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <h5>Tax</h5>
+                        <h5 id="tax">$0.00</h5>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <h5>Tip</h5>
+                        <h5 id="tip">$0.00</h5>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <h4>Total</h4>
+                        <h4 id="total">$0.00</h4>
+                    </div>
+                </div>
+            </div>
+
+            <button id="place-order-btn" type="submit" class="btn btn-primary mx-2 col-md-12  mt-5 d-none">Place Order</button>
         </form>
     </main>
 </div>
 <%- include('partials/footer'); %>
-<script src="js/g2.js"></script>
+<script src="js/lib/utils_lib.js"></script>
+<script src="js/shopping_cart.js"></script>
 </body>
 </html>

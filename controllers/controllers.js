@@ -1,5 +1,7 @@
 /** @member {Object} */
 const userModel = require('../models/user');
+const orderModel = require('../models/order');
+const productModel = require('../models/product');
 const bcrypt = require('bcryptjs');
 
 
@@ -78,14 +80,104 @@ exports.logout = (req, res) => {
 
 // Customer Routes
 exports.shopping_cart = async (req, res) => {
-    // TODO - get the menu and render the shopping form page
-    res.render('shopping_cart', {userType: req.session.userType})
+    let products = await productModel.find();
+    res.render('shopping_cart', {products: products, userType: req.session.userType})
 };
 
 exports.shopping_cart_post = async (req, res) => {
+    let data = JSON.parse(req.body.data);
 
-    // TODO - place the order and redirect to the my orders page
-    let e = req.body;
+    var t = data.toppings.map(topping => {
+        return {
+            product_id: topping,
+            quantity: 1
+        }
+    });
+
+    let order = new orderModel({
+        user_id: req.session.userId,
+        sub_total: data.sub_total,
+        tax: data.tax,
+        tip: data.tip,
+        total: data.total,
+        order_items: [
+            {
+                product_id: data.product,
+                quantity: data.quantity,
+                toppings: t
+            },
+            ...data.sides
+        ]
+    });
+
+    await order.save();
+    res.redirect('/my_orders');
+}
+
+exports.my_orders = async (req, res) => {
+    orderModel.aggregate([
+        [
+            {
+                '$unwind': {
+                    'path': '$order_items'
+                }
+            }, {
+            '$lookup': {
+                'from': 'products',
+                'localField': 'order_items.product_id',
+                'foreignField': '_id',
+                'as': 'order_items.product'
+            }
+        }, {
+            '$unwind': {
+                'path': '$order_items.product'
+            }
+        }, {
+            '$group': {
+                '_id': '$_id',
+                'order_items': {
+                    '$push': '$order_items'
+                }
+            }
+        }, {
+            '$lookup': {
+                'from': 'orders',
+                'localField': '_id',
+                'foreignField': '_id',
+                'as': 'orderDetails'
+            }
+        }, {
+            '$unwind': {
+                'path': '$orderDetails'
+            }
+        }, {
+            '$addFields': {
+                'orderDetails.order_items': '$order_items'
+            }
+        }, {
+            '$replaceRoot': {
+                'newRoot': '$orderDetails'
+            }
+        },
+            {
+                '$sort': {
+                    'createdDate': -1
+                }
+            }, {
+            '$project': {
+                'tip': 0,
+                'sub_total': 0,
+                'tax': 0,
+                '__v': 0,
+                'createdDate': 0
+            }
+        }
+        ]
+    ]).exec((err, orders) => {
+        if (err) throw err;
+        console.log(orders);
+        res.render('my_orders', {orders: orders, userType: req.session.userType})
+    });
 }
 
 // Admin Routes

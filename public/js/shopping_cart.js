@@ -1,70 +1,147 @@
 "use strict";
 
-const licenseRegex = /^\d{4}-\d{4}$/;
+var order = {}
+var products
 
-const validateForm = () => {
-    const firstName = $("#firstName").val();
-    const lastName = $("#lastName").val();
-    const licenseNo = $("#license").val();
-    const age = $("#age").val();
+const loadProducts = () => {
+    products = JSON.parse(productsStr);
+}
 
-    const make = $("#make").val();
-    const model = $("#model").val();
-    const year = $("#year").val();
-    const color = $("#color").val();
-    const plateNo = $("#plateNo").val();
+const updateCart = (product) => {
 
+    order.product = product ?? order.product;
+    let quantity = $(`#quantity-field-${order.product}`).val();
 
-    // validate the entries are not empty and display error message if they are
-    if (firstName === "" || lastName === "" || licenseNo === "" || age === "" || make === "" || model === "" || year === "" || color === "" || plateNo === "") {
-        let error = "";
-        if (firstName === "") {
-            error += "❌️ First name is required.\n";
-        }
-        if (lastName === "") {
-            error += "❌ Last name is required.\n";
-        }
-        if (licenseNo === "") {
-            error += "❌ License number is required.\n";
-        }
-        if (age === "") {
-            error += "❌ Age is required.\n";
-        }
-
-        if (make === "") {
-            error += "❌ Make is required.\n";
-        }
-        if (model === "") {
-            error += "❌ Model is required.\n";
-        }
-        if (year === "") {
-            error += "❌ Year is required.\n";
-        }
-        if (color === "") {
-            error += "❌ Color is required.\n";
-        }
-        if (plateNo === "") {
-            error += "❌ Plate number is required.\n";
-        }
-        alert(error);
-        return false;
+    if (quantity === "0") {
+        $(`#quantity-field-${order.product}`).val("1");
+        quantity = 1;
     }
 
-    // validate the license number is in the correct format
-    if (!licenseRegex.test(licenseNo)) {
-        alert("❌ License number must be in the format ####-####");
-        return false;
-    }
+    let toppings = [];
+    $(".topping_card.active").each((index, element) => {
+        toppings.push(element.id.replace("topping_", ""));
+    });
 
-    // validate the age is a number
-    if (Number.isNaN(parseInt(age))) {
-        alert("❌ Age must be a number");
-        return false;
-    }
+    // get sides
+    let sides = [];
+    products.filter((e) => e.product_type === "side").forEach((side) => {
+        console.log(side);
+        let quantity = $(`#quantity-field-${side._id}`).val();
+        console.log(quantity);
+        if (quantity > 0) {
+            sides.push({
+                product_id: side._id,
+                quantity: quantity,
+                toppings: []
+            });
+        }
+    })
 
-    return true;
+    order.sides = sides;
+    order.quantity = quantity;
+    order.toppings = toppings;
+
+    console.log(order);
+    let productObj = products.find((product) => product._id === order.product);
+    order.max_toppings = productObj['max_toppings'];
+
+    let subtotal = productObj['list_price'] + Math.max(0, (order.toppings.length - productObj['max_toppings'])) * 2;
+    subtotal *= order.quantity;
+
+
+    // add sides
+    order.sides.forEach((side) => {
+            let sideObj = products.find((product) => product._id === side.product_id);
+            subtotal += sideObj['list_price'] * side.quantity;
+        }
+    );
+    order.sub_total = subtotal.toFixed(2);
+
+    $("#subtotal").text(`$${order.sub_total}`);
+    let tax = subtotal * 0.13;
+    order.tax = tax.toFixed(2);
+    $("#tax").text(`$${order.tax}`);
+    let tip = parseFloat($("#tipSelect").val()) / 100 * subtotal;
+    order.tip = tip.toFixed(2);
+    $("#tip").text(`$${order.tip}`);
+    let total = subtotal + tip + tax;
+    order.total = total.toFixed(2);
+    $("#total").text(`$${order.total}`);
+}
+
+const clearCart = () => {
+    order = {};
+    $(".quantity-field").val("1");
+    $(".topping_card").removeClass("active");
+    $("#subtotal").text(`$0.00`);
+    $("#tax").text(`$0.00`);
+    $("#tip").text(`$0.00`);
+    $("#total").text(`$0.00`);
 }
 
 window.onload = () => {
-    $("#g2Form").submit(validateForm);
+    loadProducts();
+
+    $("#productSelect").change(() => {
+        let selected = $("#productSelect").val();
+        console.log(selected);
+        // hide item views
+        $(".item-view").addClass("d-none");
+        // show selected item view
+        if (selected !== "none") {
+            $(`#${selected}`).removeClass("d-none");
+            $(".toppings").removeClass("d-none");
+            $(".sides").removeClass("d-none");
+            $(".tip").removeClass("d-none");
+            $(".summary").removeClass("d-none");
+            $("#place-order-btn").removeClass("d-none");
+            updateCart(selected);
+        } else {
+            $(".toppings").addClass("d-none");
+            $(".sides").addClass("d-none");
+            $(".tip").addClass("d-none");
+            $(".summary").addClass("d-none");
+            $("#place-order-btn").addClass("d-none");
+            clearCart();
+        }
+    });
+
+    $("#tipSelect").change(() => {
+            let selected = $("#tipSelect").val();
+            console.log(selected);
+            updateCart();
+        }
+    );
+
+    $(".topping_card").click((event) => {
+        let topping = event.currentTarget.id
+        console.log(topping);
+        // toggle the selected class
+        $(`#${topping}`).toggleClass("active");
+        updateCart();
+    });
+
+
+    $('.input-group').on('click', '.button-plus', function (e) {
+        incrementValue(e);
+        updateCart();
+    });
+
+    $('.input-group').on('click', '.button-minus', function (e) {
+        decrementValue(e);
+        updateCart();
+    });
+
+    $('#place-order-btn').click((event) => {
+        event.preventDefault();
+
+        if (order.toppings.length < order.max_toppings) {
+            alert(`Please select at least ${order.max_toppings} toppings.`);
+            return;
+        }
+
+        let orderStr = JSON.stringify(order);
+
+        post('/shopping_cart', {data: orderStr});
+    });
 }
