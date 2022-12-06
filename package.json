@@ -21,6 +21,7 @@
     "express-router": "^0.0.1",
     "express-session": "^1.17.3",
     "mongoose": "^6.6.5",
+    "node-fpdf": "^1.0.42",
     "nodemon": "^2.0.20"
   }
 }
