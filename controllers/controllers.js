@@ -212,6 +212,11 @@ exports.shopping_cart_post = async (req, res) => {
 }
 
 exports.my_orders = async (req, res) => {
+    // const order_type = req.body
+    // if(order_type.length === undefined || order_type === ''){
+    //     order_type = ""
+    // }
+    const order_type = ""
     orderModel.aggregate([
         [
             {
@@ -230,6 +235,16 @@ exports.my_orders = async (req, res) => {
                 'path': '$order_items.product'
             }
         }, {
+            '$match':{
+                '$expr':{
+                    '$cond':[
+                        {'$in' :[order_type,[null, "", "undefined"]]},
+                        true,
+                        {'$eq':['$order_status',order_type]}
+                    ]
+                }
+            }
+        },{
             '$group': {
                 '_id': '$_id',
                 'order_items': {
@@ -361,12 +376,326 @@ exports.my_orders_receipt = async (req, res) => {
     });
 }
 
+
 // Admin Routes
 exports.dashboard = async (req, res) => {
     // TODO - get all the orders and render the dashboard
-    res.render('dashboard', {userType: req.session.userType})
+    let products = await productModel.find();
+    orderModel.aggregate([
+        [
+            {
+                '$unwind': {
+                    'path': '$order_items'
+                }
+            }, {
+                '$lookup': {
+                    'from': 'products',
+                    'localField': 'order_items.product_id',
+                    'foreignField': '_id',
+                    'as': 'order_items.product'
+                }
+            }, {
+                '$unwind': {
+                    'path': '$order_items.product'
+                }
+            }, {
+                '$group': {
+                    '_id': '$_id',
+                    'order_items': {
+                        '$push': '$order_items'
+                    }
+                }
+            }, {
+                '$lookup': {
+                    'from': 'orders',
+                    'localField': '_id',
+                    'foreignField': '_id',
+                    'as': 'orderDetails'
+                }
+            }, {
+                '$unwind': {
+                    'path': '$orderDetails'
+                }
+            }, {
+                '$addFields': {
+                    'orderDetails.order_items': '$order_items'
+                }
+            }, {
+                '$replaceRoot': {
+                    'newRoot': '$orderDetails'
+                }
+            },
+                {
+                    '$sort': {
+                        'createdDate': -1
+                    }
+                }, {
+                '$project': {
+                    '__v': 0,
+                    'createdDate': 0
+                }
+            }
+        ]
+    ]).exec((err, orders) => {
+        if (err) throw err;
+        console.log(orders);
+
+        var total_completed = 0;
+        var total_pending = 0;
+        var total_orders = 0;
+        for(const row of orders)
+        {
+            if(row.order_status === "pending"){
+                total_pending = total_pending + row.total;
+            } else if(row.order_status === "completed"){
+                total_completed = total_completed + row.total;
+            }
+        }
+        total_orders = total_completed + total_pending;
+
+        res.render('dashboard', {userType: req.session.userType,total_orders:total_orders.toFixed(2), 
+            total_completed:total_completed.toFixed(2), total_pending:total_pending.toFixed(2),
+        products:products})
+    });
+
+    
 }
 
 exports.dashboard_order_update = async (req, res) => {
     // TODO: update the order status - - should use the order id to update the order status
+}
+
+
+class WEEKLYPDF extends FPDF {
+    Header() {
+        this.SetMargins(5, 5, 5)
+        this.Ln(2);
+        this.printCenteredLine('El Mantel', "B", 20);
+        this.Ln(3);
+        this.printCenteredLine('1234 Pizza Street');
+        this.printCenteredLine('Waterloo, ON N2L 3G4');
+        this.printCenteredLine('Tel: 604-123-4567');
+        this.printCenteredLine('Email:elmantel_resto@eataly.com');
+        this.printCenteredLine('Website: www.elmantelpizzeria.com');
+        this.Ln(10);
+        this.printCenteredLine('*** Sales Report ***', "B", 20);
+        this.Ln(10);
+    }
+    
+    printCenteredLine = (text, w, size) => {
+        this.SetFont('Arial', w??"", size ?? 10);
+        this.Cell(100, 5, text, 0, 1, 'C');
+    }
+
+    printSideHeading = (text, w, size) => {
+        this.SetFont('Arial', w??"", size ?? 10);
+        this.Cell(50, 3, text, 0, 1, 'L');
+        this.Ln(2);
+    }
+
+    weeklyReport(header, orders, productList)
+    {
+        this.printSideHeading('Product Sales by Order',"B", 20);
+        
+        const price_map = new Map();
+
+        for(const product of productList){
+            price_map.set(product.name, product.list_price);
+        }
+        // Header
+        for(const col of header){
+            this.SetFont('Times', 'B', 8)
+            this.Cell(30,6,col,0);
+        }
+        this.Ln();
+        this.Cell(99, 0, '', 1, 1, 'C')
+        // Data
+        var i = 1;
+        var week_total = 0;
+        var tax_total = 0;
+        var tip_total = 0;
+
+        const main_products = new Map();
+        const side_products = new Map();
+        const topping_products = new Map();
+        
+        for(const row of orders)
+        {   
+            this.SetFont('Times', '', 8)
+            this.Cell(30,4,i,0);
+            this.Cell(30,4,row.sub_total,0);
+            this.Cell(30,4,row.tax,0);
+            this.Cell(30,4,row.total,0);
+            this.Ln();
+            week_total = week_total + row.total;
+            tax_total = tax_total + row.tax;
+            tip_total = tip_total + row.tip;
+            i+=1;
+
+
+            if(row.order_items.length > 0){
+                for(const item of row.order_items){
+                    if(item.product.product_type === "main"){
+                        if(main_products.has(item.product.name)){
+                            main_products.set(item.product.name, main_products.get(item.product.name)+1);
+                        } else{
+                            main_products.set(item.product.name, 1);
+                        }
+                    } else if(item.product.product_type === "side"){
+                        if(side_products.has(item.product.name)){
+                            side_products.set(item.product.name, side_products.get(item.product.name)+1);
+                        } else {
+                            side_products.set(item.product.name, 1);
+                        }
+                    } 
+                }
+            }
+        }
+        this.Cell(99, 0, '', 1, 1, 'C')
+        this.Ln();
+        this.Cell(30,6,'',0);
+        this.Cell(30,6,'',0);
+        this.Cell(30,6,'Total Product Sales',0);
+        this.Cell(30,6,week_total.toFixed(2),0);
+        this.Ln(10);
+
+        this.printSideHeading('Product Sales by Category',"B", 20);
+
+        const productHeader = ['Product', 'Rate', 'Items Sold', 'Total'];
+        var product_total = 0;
+        for(const col of productHeader){
+            this.SetFont('Times', 'B', 8)
+            this.Cell(30,6,col,0);
+        }
+        this.Ln();
+        this.Cell(99, 0, '', 1, 1, 'C')
+
+        for(let main of main_products.keys()){
+            this.SetFont('Times', '', 8)
+            this.Cell(30,4,main,0);
+            this.Cell(30,4,price_map.get(main),0);
+            this.Cell(30,4,main_products.get(main),0);
+            this.Cell(30,4,main_products.get(main) * price_map.get(main),0);
+            this.Ln();
+            product_total = product_total + main_products.get(main) * price_map.get(main);
+        }
+        for(let side of side_products.keys()){
+            this.SetFont('Times', '', 8)
+            this.Cell(30,4,side,0);
+            this.Cell(30,4,price_map.get(side),0);
+            this.Cell(30,4,side_products.get(side),0);
+            this.Cell(30,4,side_products.get(side) * price_map.get(side),0);
+            this.Ln();
+            product_total = product_total + side_products.get(side) * price_map.get(side);
+        }
+
+        this.Ln();
+        this.Cell(99, 0, '', 1, 1, 'C')
+        this.Cell(30,6,'',0);
+        this.Cell(30,6,'',0);
+        this.Cell(30,6,'Total Product Sales',0);
+        this.Cell(30,6,product_total,0);
+
+        this.Ln();
+        this.Cell(30,6,'',0);
+        this.Cell(30,6,'',0);
+        this.Cell(30,6,'Total Tax',0);
+        this.Cell(30,6,tax_total,0);
+
+        this.Ln();
+        this.Cell(30,6,'',0);
+        this.Cell(30,6,'',0);
+        this.Cell(30,6,'Total Tips',0);
+        this.Cell(30,6,tip_total,0);
+
+        this.Ln();
+        this.Cell(99, 0, '', 1, 1, 'C')
+        this.Cell(30,6,'',0);
+        this.Cell(30,6,'',0);
+        this.Cell(30,6,'Net Sales',0);
+        this.Cell(30,6,tip_total + tax_total + product_total,0);
+        this.Ln();
+    }
+}
+
+
+
+exports.weekly_report = async (req, res) => {
+    let productList = await productModel.find();
+    orderModel.aggregate([
+        [
+            {
+                '$unwind': {
+                    'path': '$order_items'
+                }
+            }, {
+                '$lookup': {
+                    'from': 'products',
+                    'localField': 'order_items.product_id',
+                    'foreignField': '_id',
+                    'as': 'order_items.product'
+                }
+            }, {
+                '$unwind': {
+                    'path': '$order_items.product'
+                }
+            }, {
+                '$group': {
+                    '_id': '$_id',
+                    'order_items': {
+                        '$push': '$order_items'
+                    }
+                }
+            }, {
+                '$lookup': {
+                    'from': 'orders',
+                    'localField': '_id',
+                    'foreignField': '_id',
+                    'as': 'orderDetails'
+                }
+            }, {
+                '$unwind': {
+                    'path': '$orderDetails'
+                }
+            }, {
+                '$addFields': {
+                    'orderDetails.order_items': '$order_items'
+                }
+            }, {
+                '$replaceRoot': {
+                    'newRoot': '$orderDetails'
+                }
+            },
+                {
+                    '$sort': {
+                        'createdDate': -1
+                    }
+                }, {
+                '$project': {
+                    '__v': 0,
+                    'createdDate': 0
+                }
+            }
+        ]
+    ]).exec((err, orders) => {
+        if (err) throw err;
+        console.log(orders);
+        // console.log("Will print weekly report here");
+
+        let cPdfName = `${__dirname}/weekly_report.pdf`
+        const pdf = new WEEKLYPDF('P', 'mm', [110, 297]);
+        pdf.AddPage()
+        // user info
+        // pdf.UserInfo(order[0].user[0])
+        // pdf.OrderInfo(order[0])
+        // pdf.OrderTotal(order[0])
+         // Thanks for shopping
+         pdf.Ln(5)
+        
+         const header = ['Order','SubTotal','Tax','Total'];
+         pdf.weeklyReport(header,orders, productList);
+         
+         pdf.Output('f', cPdfName)
+         res.download(cPdfName)
+    });
 }

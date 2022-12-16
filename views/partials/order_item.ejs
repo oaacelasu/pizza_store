@@ -52,6 +52,15 @@
             <h2><span class="badge bg-primary rounded-pill mt-3">
                                 Total: <%= orders[i].total %>
                             </span></h2>
+            <% if(userType === "admin" && orders[i].order_status === "pending") { %>
+                <select class="form-select" id="productSelect" aria-label="Product select label">
+                    <option value="pending" selected>Pending</option>
+                    <option value="completed" selected>Completed</option>
+                </select>
+                <h2><span class="badge bg-primary rounded-pill mt-3">
+                    Update       
+                </span></h2>
+            <%}%>
 
         </div>
     </div>

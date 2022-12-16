@@ -3,12 +3,16 @@
 <%- include('partials/navbar'); %>
 <div>
     <main class="container">
-        <%- include('partials/header', {title:'My Orders', description:'Find here your latest orders'}); %>
+        <% if(userType === "customer") { %>
+            <%- include('partials/header', {title:'My Orders', description:'Find here your latest orders'}); %>
+        <% } else { %>
+            <%- include('partials/header', {title:'Order Details', description:'Total placed orders'}); %>
+        <% } %>   
 
         <div class="list-group">
 
             <% for (let i = 0; i < orders?.length ?? 0; i++) { %>
-                <%- include('partials/order_item', {i:i}); %>
+                <%- include('partials/order_item', {i:i, userType:userType}); %>
             <% } %>
             <h2 class="text-lg text-info mt-3 <%= orders.length !== 0 ? "hidden" : "visible" %>">You don't have orders
                 yet</h2>

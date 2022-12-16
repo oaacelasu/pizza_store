@@ -2,15 +2,124 @@
 <body>
 <%- include('partials/navbar'); %>
 <main>
-    <section class="py-5 text-center bg-dark">
-        <div class="row py-lg-5">
+    <section class="py-1 text-center bg-dark">
+        <div class="row py-lg-1">
             <div class="col-lg-6 col-md-8 mx-auto">
-                <h1 class="text-white">Mantel Rojo</h1>
-                <p class="lead text-white">the best Pizza Store in the City!!</p>
+                <h1 class="text-white">Dashboard</h1>
             </div>
         </div>
     </section>
-+</main>
+    <div class="container text-center">
+        <div class="row row-cols-2 row-cols-lg-3 g-2 g-lg-3">
+          <div class="col">
+            <div class="p-3 border bg-light">
+                <div class="row row-cols-3 row-cols-lg-1 g-3 g-lg-1">
+                    <div class="col">
+                        <div class="p-3 border font-weight-bold">$<%= total_orders %></div>
+                    </div>
+                    <div class="col">
+                        <div class="p-3 border secondary">Total Orders</div>
+                    </div>
+                    <div class="col">
+                        <div class="p-3 border">
+                            <a href="/weekly_report">
+                            <button id="place-order-btn" class="btn btn-primary">Get Report</button>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="p-3 border bg-light">
+                <div class="row row-cols-3 row-cols-lg-1 g-3 g-lg-1">
+                    <div class="col">
+                        <div class="p-3 border font-weight-bold">$<%= total_pending %></div>
+                    </div>
+                    <div class="col">
+                        <div class="p-3 border secondary">Pendings Orders</div>
+                    </div>
+                    <div class="col">
+                        <div class="p-3 border">
+                            <a href="/my_orders">
+                                <button id="place-order-btn" type="submit" class="btn btn-primary">View Orders</button>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="p-3 border bg-light">
+                <div class="row row-cols-3 row-cols-lg-1 g-3 g-lg-1">
+                    <div class="col">
+                        <div class="p-3 border font-weight-bold">$<%= total_completed %></div>
+                    </div>
+                    <div class="col">
+                        <div class="p-3 border secondary">Completed Orders</div>
+                    </div>
+                    <div class="col">
+                        <div class="p-3 border">
+                            <button id="place-order-btn" type="submit" class="btn btn-primary">Get Report</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="p-3 border bg-light">
+                <div class="row row-cols-3 row-cols-lg-1 g-3 g-lg-1">
+                    <div class="col">
+                        <div class="p-3 border font-weight-bold"><%= products.length %></div>
+                    </div>
+                    <div class="col">
+                        <div class="p-3 border secondary">Total Products</div>
+                    </div>
+                    <div class="col">
+                        <div class="p-3 border">
+                            <button id="place-order-btn" type="submit" class="btn btn-primary">See Products</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="p-3 border bg-light">
+                <div class="row row-cols-3 row-cols-lg-1 g-3 g-lg-1">
+                    <div class="col">
+                        <div class="p-3 border font-weight-bold">5</div>
+                    </div>
+                    <div class="col">
+                        <div class="p-3 border secondary">Total Users</div>
+                    </div>
+                    <div class="col">
+                        <div class="p-3 border">
+                            <button id="place-order-btn" type="submit" class="btn btn-primary">See Users</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="p-3 border bg-light">
+                <div class="row row-cols-3 row-cols-lg-1 g-3 g-lg-1">
+                    <div class="col">
+                        <div class="p-3 border font-weight-bold">2</div>
+                    </div>
+                    <div class="col">
+                        <div class="p-3 border secondary">Total Admins</div>
+                    </div>
+                    <div class="col">
+                        <div class="p-3 border">
+                            <button id="place-order-btn" type="submit" class="btn btn-primary">See Admins</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </div>         
+        </div>
+      </div>
+</main>
 <%- include('partials/footer'); %>
 </body>
 </html>
